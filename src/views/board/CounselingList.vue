@@ -80,25 +80,16 @@ export default {
     return {
       requestBody: {}, //리스트 페이지 데이터전송
       list: {}, //리스트 데이터
-      no: "", //게시판 숫자처리
       paging: {
-        block: 0,
-        end_page: 0,
-        next_block: 0,
-        page: 0,
-        page_size: 0,
-        prev_block: 0,
-        start_index: 0,
         start_page: 0,
-        total_block_cnt: 0,
+        end_page: 0,
+        page: 0,
         total_list_cnt: 0,
         total_page_cnt: 0,
       }, //페이징 데이터
       page: this.$route.query.page ? this.$route.query.page : 1,
-      size: this.$route.query.size ? this.$route.query.size : 10,
-      keyword: this.$route.query.keyword,
+      size: 10,
       paginavigation: function () {
-        //페이징 처리 for문 커스텀
         let pageNumber = []; //;
         let start_page = this.paging.start_page;
         let end_page = this.paging.end_page;
@@ -115,8 +106,8 @@ export default {
       this.requestBody = {
         ServiceKey:
           "NjYn2Py+ZY59COKW4ae9+tcgqOa9f6uFNvZXBN4yCcm0ZznKjLu1uj8pbcuRRrxtJK/dRswwCSK+JWjkHqTCuQ==",
-        pageNo: 1,
-        numOfRows: 10,
+        pageNo: this.page,
+        numOfRows: this.size,
       };
 
       this.$axios
@@ -128,10 +119,7 @@ export default {
           let parser = new DOMParser();
           let xmlDoc = parser.parseFromString(res.data, "text/xml");
           let row = xmlDoc.getElementsByTagName("row");
-          let total_list_cnt = xmlDoc
-            .getElementsByTagName("head")[0]
-            .querySelector("totalCount").innerHTML;
-          console.log("t", total_list_cnt);
+
           const list = [];
           for (let i = 0; i < row.length; i++) {
             list.push({
@@ -144,11 +132,31 @@ export default {
               use_amt: row[i].querySelector("use_amt").innerHTML,
             });
           }
+
+          let total_list_cnt = xmlDoc
+            .getElementsByTagName("head")[0]
+            .querySelector("totalCount").innerHTML;
+
           this.list = list;
+          this.paging.total_list_cnt = total_list_cnt;
+          this.paging.page = xmlDoc
+            .getElementsByTagName("head")[0]
+            .querySelector("pageNo").innerHTML;
+          this.paging.total_page_cnt = Math.ceil(total_list_cnt / 10);
+          this.paging.start_page = Math.floor(this.paging.page / 5) * 5 + 1;
+          this.paging.end_page =
+            Math.floor(this.paging.page / 5) * 5 +
+            (this.paging.total_page_cnt % 5);
         })
         .catch((err) => {
           console.error("err::", err);
         });
+    },
+    fnPage(n) {
+      if (this.page !== n) {
+        this.page = n;
+        this.counselingGetList();
+      }
     },
   },
 };

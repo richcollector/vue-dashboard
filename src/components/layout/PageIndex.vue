@@ -1,6 +1,6 @@
 <!-- PageIndex.vue -->
 <template>
   <div class="about">
-    <h1>This is an index page</h1>
+    <h3>행정안전부_통계연보_상담서비스 OPEN API</h3>
   </div>
 </template>
